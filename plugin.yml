@@ -1,0 +1,7 @@
+name: Recipe
+version: 1.0
+main: org.CBPL.recipe.main.Main
+author: Dev_Unknown
+
+commands:
+  레시피:
