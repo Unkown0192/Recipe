@@ -46,4 +46,7 @@ public class Util {
 		
 		return empty;
 	}
+	
+	public void I_Love_It() {
+	}
 }
