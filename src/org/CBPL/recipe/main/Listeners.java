@@ -8,8 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,6 +28,7 @@ public class Listeners implements Listener {
 	@EventHandler
 	public void onClick(InventoryClickEvent e) {
 		Player p = (Player) e.getWhoClicked();
+		String playerName = p.getName();
 		Inventory inv = e.getInventory();
 		String title = inv.getTitle().replace("§8§l", "");
 		
@@ -49,6 +50,7 @@ public class Listeners implements Listener {
 				recipe.setMaterial(material);
 				recipe.setResult(result);
 				recipe.addList();
+				Recipe.save();
 				p.closeInventory();
 				sendMessage(p, "성공적으로 레시피가 생성되었습니다. : §6§l" + recipeName);
 				return;
@@ -60,7 +62,7 @@ public class Listeners implements Listener {
 			if (e.getRawSlot() == 32) {
 				e.setCancelled(true);
 				ItemStack sign = e.getCurrentItem();
-				List<String> recipes = PlayerRecipe.getRecipes(p.getName());
+				List<String> recipes = PlayerRecipe.getRecipes(playerName);
 				
 				
 				int max = recipes.size() - 1;
@@ -120,12 +122,10 @@ public class Listeners implements Listener {
 				return;
 			}
 			
-			List<Integer> resultSlot = Arrays.asList(24, 25, 33, 34);
-			List<Integer> materialSlot = Arrays.asList(10, 11, 12, 13, 19, 20, 21, 22, 28, 29, 30, 31, 37, 38, 39, 40);
 			
-			List<ItemStack> empty = Arrays.asList(new ItemStack(Material.AIR), new ItemStack(Material.AIR), new ItemStack(Material.AIR), new ItemStack(Material.AIR));
+			final List<ItemStack> empty = Arrays.asList(new ItemStack(Material.AIR), new ItemStack(Material.AIR), new ItemStack(Material.AIR), new ItemStack(Material.AIR));
 			
-			if (materialSlot.contains(e.getRawSlot())) {
+			if (Recipe.materialSlot.contains(e.getRawSlot()) || Recipe.resultSlot.contains(e.getRawSlot()) || e.getRawSlot() == 32) {
 				
 				List<ItemStack> result_ = Recipe.getResultFromInventory(inv);
 				
@@ -144,32 +144,31 @@ public class Listeners implements Listener {
 	                List<ItemStack> nowMaterial = Recipe.getMaterialFromInventory(inv);
 	                
 					if (Recipe.isEqualsRecipe(material, nowMaterial)) {
-						for (int i : materialSlot) {
+						for (int i : Recipe.materialSlot) 
 							inv.setItem(i, new ItemStack(Material.AIR));
-						}
-						for (int i : resultSlot) {
+						for (int i : Recipe.resultSlot) 
 							inv.setItem(i, result.get(PlayerRecipe.changeResultSlot(i, false)));
-						}
+						
 					}
 					return; 
 	            }, 1L);
 				
 			}
-			if (!Recipe.clickAble(e.getRawSlot())) {
+			if (!Recipe.clickAble(e.getRawSlot())) 
 				e.setCancelled(true);
-			}
+			
 		}
 		
 		if (title.contains("레시피 목록")) {
 			e.setCancelled(true);
-			PlayerRecipe pr = new PlayerRecipe(p.getName());
+			PlayerRecipe pr = new PlayerRecipe(playerName);
 			
-			List<String> recipes = PlayerRecipe.getRecipes(p.getName());
+			List<String> recipes = PlayerRecipe.getRecipes(playerName);
 			
-			for (int i = 0; i < recipes.size(); i++) {
+			for (int i = 0; i < recipes.size(); i++) 
 				if (!Main.recipe.contains(recipes.get(i)))
 					recipes.remove(i);
-			}
+			
 			
 			int nowPage = Integer.parseInt(inv.getItem(45).getItemMeta().getLore().get(1).replace("§7현재 페이지 : §f", ""));
 			int maxPage = (recipes.size() / 36) + ((recipes.size() % 36 == 0) ? 0 : 1); 
@@ -190,7 +189,7 @@ public class Listeners implements Listener {
 				
 				return;
 			}
-			if (e.getCurrentItem().getType().equals(Material.BOOK)) {
+			if (e.getCurrentItem().getType().equals(Material.ENCHANTED_BOOK)) {
 				String recipe = e.getCurrentItem().getItemMeta().getDisplayName().replace("§e§l[ §f레시피북 : §6§l", "").replace(" §e§l]", "");
 				p.closeInventory();
 				p.openInventory(PlayerRecipe.getRecipeViewGUI(recipe));
@@ -198,37 +197,45 @@ public class Listeners implements Listener {
 			}
 		}
 		
-		if (title.contains("레시피 확인")) {
+		if (title.contains("레시피 확인")) 
 			e.setCancelled(true);
-		}
+		
 	}
 	
 	@EventHandler
 	public void onItemClick(PlayerInteractEvent e) { //레시피북 사용
 		Player p = e.getPlayer();
+		String playerName = p.getName();
 		ItemStack item = e.getItem();
 		Action a = e.getAction();
 		
 		if (item != null && item.getItemMeta() != null && item.getItemMeta().getDisplayName() != null) {
-			if (item.getType().equals(Material.BOOK) && item.getItemMeta().getDisplayName().contains("§e§l[ §f레시피북 ")) {
+			if (item.getType().equals(Material.ENCHANTED_BOOK) && item.getItemMeta().getDisplayName().contains("§e§l[ §f레시피북 ")) {
 				if (a.equals(Action.RIGHT_CLICK_AIR) || a.equals(Action.RIGHT_CLICK_BLOCK)) {
-					PlayerRecipe pr = new PlayerRecipe(p.getName());
-					List<String> recipes = PlayerRecipe.getRecipes(p.getName());
+					PlayerRecipe pr = new PlayerRecipe(playerName);
+					List<String> recipes = PlayerRecipe.getRecipes(playerName);
 					
 					String recipe = item.getItemMeta().getDisplayName().replace("§e§l[ §f레시피북 : §6§l", "").replace(" §e§l]", "");
 					
 					if (!Main.recipe.contains(recipe)) return;
 					if (recipes.contains(recipe)) return;
 					
+					if (!PlayerRecipe.getPlayerList().contains(playerName)) {
+						List<String> playerList = Main.recipe.contains("플레이어.목록") ? PlayerRecipe.getPlayerList() : new ArrayList<>();
+						playerList.add(playerName);
+						Main.recipe.set("플레이어.목록", playerList);
+					}
 					
+					ItemStack item_ = p.getItemInHand();
+					item_.setAmount(item.getAmount()-1);
 					
-					p.getItemInHand().setAmount(p.getItemInHand().getAmount()-1);
+					p.setItemInHand(item_);
 					pr.addList(item.getItemMeta().getDisplayName().replace("§e§l[ §f레시피북 : §6§l", "").replace(" §e§l]", ""));
-					
-
+					Recipe.save();
+						
 					sendMessage(p, "레시피를 습득하였습니다. : §6§l" + item.getItemMeta().getDisplayName().replace("§e§l[ §f레시피북 : §6§l", "").replace(" §e§l]", ""));
-					p.spawnParticle(Particle.FLAME, p.getLocation(), 50, 0.7d, 0.7d, 0.7d, 0.07d);
-					p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+					p.playEffect(p.getLocation(), Effect.MOBSPAWNER_FLAMES, 0);
+					p.playSound(p.getLocation(), Sound.LEVEL_UP, 1f, 1f);
 				}
 			}
 		}
@@ -244,19 +251,19 @@ public class Listeners implements Listener {
 			List<ItemStack> material = Recipe.getMaterialFromInventory(inv);
 			List<ItemStack> result = Recipe.getResultFromInventory(inv);
 			
-			if (!Recipe.isEmpty(material)) {
+			if (!Recipe.isEmpty(material)) 
 				for (ItemStack item : material) {
 					if (item.getType().equals(Material.AIR)) continue;
 					p.getWorld().dropItem(p.getLocation(), item);
 				}
-			}
 			
-			if (!Recipe.isEmpty(result))  {
+			
+			if (!Recipe.isEmpty(result))  
 				for (ItemStack item : result) {
 					if (item.getType().equals(Material.AIR)) continue;
 					p.getWorld().dropItem(p.getLocation(), item);
 				}
-			}
+			
 		}
 	}
 }

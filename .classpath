@@ -6,6 +6,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="C:/Users/apple/Desktop/서진홀더/Spigot/1.12.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/apple/Desktop/서진홀더/Bukkit/1.5.2_Spigot/1.5.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -12,7 +12,6 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -25,15 +24,14 @@ public class PlayerRecipe {
 	
 	
 	public static List<String> getPlayerList() {
-		return Main.recipe.getStringList("플레이어.목록");
+		return Main.recipe.contains("플레이어.목록") ? Main.recipe.getStringList("플레이어.목록") : new ArrayList<>();
 		
 	}
 	
   	public static ItemStack getRecipeListBook(String recipe) {
-		ItemStack book = createItem(Material.BOOK, (byte) 0, "§e§l[ §f레시피북 : §6§l" + recipe + " §e§l]", Arrays.asList("§7클릭 시 레시피를 확인합니다."), 1);
+		ItemStack book = createItem(Material.ENCHANTED_BOOK, (byte) 0, "§e§l[ §f레시피북 : §6§l" + recipe + " §e§l]", Arrays.asList("§7클릭 시 레시피를 확인합니다."), 1);
 		ItemMeta bookMeta = book.getItemMeta();
 		bookMeta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, 1, true);
-		bookMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		book.setItemMeta(bookMeta);
 		return book;
 	}
@@ -41,7 +39,7 @@ public class PlayerRecipe {
 	public Inventory getRecipeListGUI(int page) {
 		Inventory inv = Bukkit.createInventory(null, 54, "§0§l레시피 목록 - " + name);
 		
-		ItemStack deco = createItem(Material.STAINED_GLASS_PANE, (byte) 7, " ", new ArrayList<>(), 1);
+		ItemStack deco = createItem(Material.WOOL, (byte) 7, " ", new ArrayList<>(), 1);
 		ItemStack arrow_next = createItem(Material.ARROW, (byte) 0, "§f§l다음 페이지", Arrays.asList("§7클릭 시 다음 페이지로 이동합니다.", "§7현재 페이지 : §f" + page), 1);
 		ItemStack arrow_back = createItem(Material.ARROW, (byte) 0, "§f§l이전 페이지", Arrays.asList("§7클릭 시 이전 페이지로 이동합니다.", "§7현재 페이지 : §f" + page), 1);
 		final List<Integer> exception = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 52, 51, 50, 49, 48, 47, 46);
@@ -150,7 +148,7 @@ public class PlayerRecipe {
 	public static Inventory getRecipeViewGUI(String recipeName) {
 		Inventory inv = Bukkit.createInventory(null, 54, "§0§l레시피 확인 - " + recipeName);
 		
-		ItemStack deco = createItem(Material.STAINED_GLASS_PANE, (byte) 7, " ", new ArrayList<>(), 1);
+		ItemStack deco = createItem(Material.WOOL, (byte) 7, " ", new ArrayList<>(), 1);
 		ItemStack info = createItem(Material.SIGN, (byte) 0, "§f§l현재 선택 된 레시피: §c§lX", Arrays.asList("§7클릭 시 변경 가능"), 1);
 		
 		final List<Integer> exception = Arrays.asList(10, 11, 12, 13, 19, 20, 21, 22, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40);
@@ -184,13 +182,6 @@ public class PlayerRecipe {
 		List<String> list = getRecipes(name);
 		list.add(recipe);
 		Main.recipe.set("플레이어." + name, list);
-		Recipe.save();
 	}
 	
-	public void removeList(String recipe) {
-		List<String> list = getRecipes(name);
-		list.remove(recipe);
-		Main.recipe.set("플레이어." + name, list);
-		Recipe.save();
-	}
 }

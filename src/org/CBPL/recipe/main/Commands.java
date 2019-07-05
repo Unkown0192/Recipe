@@ -36,18 +36,19 @@ public class Commands implements CommandExecutor {
 					return false;
 				}
 				
-				sendMessage(p, "§e§l━━━━━━━━━━━━━━━━━━━━━[ §6§lRecipe v1.0 §e§l]━━━━━━━━━━━━━━━━━━━━━", false);
+				sendMessage(p, "§e§l━━━━━━━━━━━━━━[ §6§lRecipe v1.0 §e§l]━━━━━━━━━━━━━━", false);
 				sendMessage(p, "", false);
 				sendMessage(p, "§6/§e레시피 도움말 §6- §f플러그인 사용법을 확인합니다.", false);
 				sendMessage(p, "", false);
 				sendMessage(p, "§6/§e레시피 생성 §6<§e레시피 이름§6> - §f레시피를 생성합니다. (GUI로 설정)", false);
 				sendMessage(p, "§6/§e레시피 삭제 §6<§e레시피 이름§6> - §f레시피를 삭제합니다.", false);
+				sendMessage(p, "§6/§e레시피 생성목록 §6 - §f생성 된 레시피를 확인합니다.", false);
 				sendMessage(p, "§6/§e레시피 지급 §6<§e레시피 이름§6> <§e닉네임§6> - §f레시피북을 플레이어에게 지급합니다.", false);
 				sendMessage(p, "", false);
 				sendMessage(p, "§6/§e레시피 §6- §f레시피를 조합할 수 있는 조합대를 오픈합니다. (GUI 형태로 열림)", false);
 				sendMessage(p, "§6/§e레시피 목록 §6- §f습득한 레시피 목록을 확인합니다. (GUI 형태로 열림)", false);
 				sendMessage(p, "", false);
-				sendMessage(p, "§e§l━━━━━━━━━━━━━━━━━━━━━[ §6§lRecipe v1.0 §e§l]━━━━━━━━━━━━━━━━━━━━━", false);
+				sendMessage(p, "§e§l━━━━━━━━━━━━━━[ §6§lRecipe v1.0 §e§l]━━━━━━━━━━━━━━", false);
 				return false;
 			}
 		
@@ -91,6 +92,18 @@ public class Commands implements CommandExecutor {
 				Recipe recipe = new Recipe(args[1]);
 				recipe.remove();
 				sendMessage(p, "성공적으로 레시피가 삭제되었습니다 : §6§l" + args[1]);
+				return false;
+			}
+			
+			if (args[0].equals("생성목록")) {
+				if (args.length != 1) {
+					sendMessage(p, "/레시피 생성목록");
+					return false;
+				}
+				
+				List<String> list = Main.recipe.contains("목록") ? Recipe.getRecipeList() : new ArrayList<>();
+				sendMessage(p, "생성 된 레시피 §6§l: §f" + list.toString());
+				return false;
 			}
 			
 			if (args[0].equals("지급")) {
@@ -141,6 +154,7 @@ public class Commands implements CommandExecutor {
 				return false;
 			}
 			
+			sendMessage(p, "올바르지 않은 명령어 사용법입니다. /레시피 도움말");
 			return false;
 		}
 		return false; 

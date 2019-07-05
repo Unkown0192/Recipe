@@ -10,9 +10,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -23,6 +21,9 @@ public class Recipe {
 	public Recipe(String name) {
 		this.name = name;
 	}
+	
+	public static final List<Integer> resultSlot = Arrays.asList(24, 25, 33, 34);
+	public static final List<Integer> materialSlot = Arrays.asList(10, 11, 12, 13, 19, 20, 21, 22, 28, 29, 30, 31, 37, 38, 39, 40);
 	
 	public static void save() {
 		try {
@@ -35,19 +36,16 @@ public class Recipe {
 	
 	public void remove() {
 		Main.recipe.set(name, null);
-		save();
 		removeList();
+		save();
 	}
 	
 	public static List<String> getRecipeList() {
-		List<String> list = new ArrayList<>();
-		list = Main.recipe.getStringList("목록");
-		return list;
+		return Main.recipe.contains("목록") ? Main.recipe.getStringList("목록") : new ArrayList<>();
 	}
 	
 	public void setList(List<String> recipeList) {
 		Main.recipe.set("목록", recipeList);
-		save();
 	}
 	
 	public void addList() {
@@ -63,10 +61,9 @@ public class Recipe {
 	}
 	
   	public ItemStack getRecipeBook() {
-		ItemStack book = createItem(Material.BOOK, (byte) 0, "§e§l[ §f레시피북 : §6§l" + name + " §e§l]", Arrays.asList("§7우클릭 시 레시피를 습득합니다."), 1);
+		ItemStack book = createItem(Material.ENCHANTED_BOOK, (byte) 0, "§e§l[ §f레시피북 : §6§l" + name + " §e§l]", Arrays.asList("§7우클릭 시 레시피를 습득합니다."), 1);
 		ItemMeta bookMeta = book.getItemMeta();
 		bookMeta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, 1, true);
-		bookMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		book.setItemMeta(bookMeta);
 		return book;
 	}
@@ -84,15 +81,13 @@ public class Recipe {
   	}
   	
 	public List<ItemStack> getMaterial() { //재료
-		return (List<ItemStack>) Main.recipe.getList(name + ".조합법");
+		return (List<ItemStack>) (Main.recipe.contains(name + ".조합법") ? Main.recipe.getList(name + ".조합법") : new ArrayList<>());
 	}
 	
 	public static List<ItemStack> getMaterialFromInventory(Inventory inv) { //레시피 조합대에서 재료칸에 있는 아이템 전부 가져오기
 		List<ItemStack> material = new ArrayList<>();
 		
-		final List<Integer> exception = Arrays.asList(10, 11, 12, 13, 19, 20, 21, 22, 28, 29, 30, 31, 37, 38, 39, 40);
-		
-		for (int i : exception) {
+		for (int i : materialSlot) {
 			if (inv.getItem(i) == null) {
 				material.add(new ItemStack(Material.AIR));
 				continue;
@@ -108,15 +103,13 @@ public class Recipe {
 	}
 	
 	public List<ItemStack> getResult() {
-		return (List<ItemStack>) Main.recipe.getList(name + ".결과");
+		return (List<ItemStack>) (Main.recipe.contains(name + ".결과") ? Main.recipe.getList(name + ".결과") : new ArrayList<>());
 	}
 	
 	public static List<ItemStack> getResultFromInventory(Inventory inv) {
 		List<ItemStack> result = new ArrayList<>();
 		
-		final List<Integer> exception = Arrays.asList(24, 25, 33, 34);
-		
-		for (int i : exception) {
+		for (int i : resultSlot) {
 			if (inv.getItem(i) == null) {
 				result.add(new ItemStack(Material.AIR));
 				continue;
@@ -128,13 +121,12 @@ public class Recipe {
 	
 	public void setResult(List<ItemStack> result) {
 		Main.recipe.set(name + ".결과", result);
-		save();
 	}
 	
 	public static Inventory getRecipeGUI(String string) {
 		Inventory inv = Bukkit.createInventory(null, 54, "§0§l레시피 조합대");
 		
-		ItemStack deco = createItem(Material.STAINED_GLASS_PANE, (byte) 7, " ", new ArrayList<>(), 1);
+		ItemStack deco = createItem(Material.WOOL, (byte) 7, " ", new ArrayList<>(), 1);
 		ItemStack info = createItem(Material.SIGN, (byte) 0, "§f§l현재 선택 된 레시피: §6§l" + (PlayerRecipe.getRecipes(string).isEmpty() ? "§c§lX" : PlayerRecipe.getRecipes(string).get(0)), Arrays.asList("§7R : 다음 레시피", "§7Shift + R : 다음 레시피(5개씩 이동)", "§7L : 이전 레시피", "§7Shift + L : 이전 레시피(5개씩 이동)"), 1);
 		
 		final List<Integer> exception = Arrays.asList(10, 11, 12, 13, 19, 20, 21, 22, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40);
@@ -151,7 +143,7 @@ public class Recipe {
 	public Inventory getSettingGUI() {
 		Inventory inv = Bukkit.createInventory(null, 54, "§0§l레시피 생성 - " + name);
 		
-		ItemStack deco = createItem(Material.STAINED_GLASS_PANE, (byte) 7, " ", new ArrayList<>(), 1);
+		ItemStack deco = createItem(Material.WOOL, (byte) 7, " ", new ArrayList<>(), 1);
 		ItemStack info = createItem(Material.SIGN, (byte) 0, "§f§l현재 선택 된 레시피: §c§lX", Arrays.asList("§7클릭 시 변경 가능"), 1);
 		ItemStack mode = createItem(Material.BOOK_AND_QUILL, (byte) 0, "§6§l현재 레시피 생성 모드입니다.", Arrays.asList("§7클릭 시 레시피 생성을 완료합니다."), 1);
 		
